@@ -20,6 +20,18 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -o /out/dbsync \
     ./cmd/dbsync
 
+# Build the runtime CA bundle. Starts from the builder's standard public CA
+# bundle, and appends any PEM certificates found in certs/ (e.g. a corporate
+# TLS-inspection root CA such as Zscaler, required on networks that
+# intercept outbound HTTPS). certs/ is empty by default and gitignored for
+# its actual certificate contents -- see certs/README.md. This step never
+# fails even if certs/ contains no *.pem files.
+RUN cp /etc/ssl/certs/ca-certificates.crt /out/ca-certificates.crt \
+    && for f in certs/*.pem; do \
+         [ -f "$f" ] && cat "$f" >> /out/ca-certificates.crt; \
+       done; \
+    true
+
 # ---- Runtime stage ----------------------------------------------------------
 FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
@@ -28,6 +40,10 @@ FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 WORKDIR /app
 
 COPY --from=build /out/dbsync /usr/local/bin/dbsync
+# Overwrite the default CA bundle with the (possibly extended) one built
+# above, so any corporate root CA in certs/*.pem is trusted by outbound
+# HTTPS calls to the Dropbox API.
+COPY --from=build /out/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # Persistent state (SQLite database + WAL files) lives here; mount a volume
 # at this path so synchronization history survives container restarts.

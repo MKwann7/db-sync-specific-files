@@ -3,6 +3,11 @@
 .env.*
 !.env.example
 
+# Corporate/custom CA certificates (environment-specific; see certs/README.md)
+certs/*.pem
+certs/*.crt
+!certs/README.md
+
 # Local, environment-specific configuration (keep config.example.yaml only)
 config/config.yaml
 

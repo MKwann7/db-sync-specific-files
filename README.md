@@ -524,6 +524,15 @@ need to be pulled once.
   dependencies should already be vendored in this repository (`vendor/`);
   verify `vendor/` exists and wasn't accidentally excluded, and that your
   Docker build context includes it (check `.dockerignore`).
+- **`tls: failed to verify certificate: x509: certificate signed by
+  unknown authority` when talking to the Dropbox API from inside the
+  container** — your network performs TLS inspection (e.g. a corporate
+  proxy such as Zscaler). Your host trusts the corporate root CA, but the
+  minimal container image does not by default. Export your organization's
+  root CA certificate(s) into `certs/*.pem` (see `certs/README.md`) and
+  rebuild with `docker compose build --no-cache`; the Dockerfile
+  automatically merges any certificates found there into the image's
+  trusted CA bundle.
 
 ## 19. Known limitations
 

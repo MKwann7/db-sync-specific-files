@@ -37,12 +37,12 @@ services:
       - ./config/config.yaml:/app/config.yaml:ro
       # Persistent synchronization state (SQLite); survives restarts.
       - ./state:/app/state
-      # Example bind mounts matching config/config.example.yaml. Replace
-      # /host/... with real paths on your machine, or add/remove mounts to
-      # match your own file mappings.
-      - /host/books:/data/books
-      - /host/artwork:/data/artwork
-      - /host/references:/data/references
+      # Bind-mount the real host folder containing the file(s) you want to
+      # sync. The container-side path (right of the colon) must match the
+      # "local" path (and "security.allowed_roots" entry) used in
+      # config/config.yaml -- the container never sees your host filesystem
+      # directly, only what is explicitly mounted here.
+      - "/Users/Micah.Zak@mheducation.com/Documents/CreativeWorks:/data/creative-works"
     # No ports are published: dbsync only makes outbound HTTPS requests to
     # Dropbox. The one-time `auth login` flow needs an inbound loopback
     # callback and is intended to be run on the host via
