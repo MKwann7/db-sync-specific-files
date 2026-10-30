@@ -1,0 +1,50 @@
+# Docker Compose configuration for dbsync.
+#
+# Quick start:
+#   cp .env.example .env            # fill in DROPBOX_APP_KEY / DROPBOX_APP_SECRET
+#   cp config/config.example.yaml config/config.yaml   # edit mappings
+#
+#   # One-time Dropbox authorization: run this on the HOST (not in Docker),
+#   # since the callback listener binds to 127.0.0.1 and Docker's container
+#   # loopback is not reachable from your browser. See README.md for
+#   # details, including the --manual fallback for headless hosts.
+#   go run ./cmd/dbsync auth login
+#   # Copy the printed DROPBOX_REFRESH_TOKEN into .env, then:
+#
+#   docker compose build
+#   docker compose run --rm dbsync config validate
+#   docker compose run --rm dbsync sync --dry-run
+#   docker compose up -d
+#   docker compose logs -f
+#   docker compose down
+
+services:
+  dbsync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dbsync:latest
+    container_name: dbsync
+    restart: unless-stopped
+    init: true
+    environment:
+      DROPBOX_APP_KEY: ${DROPBOX_APP_KEY}
+      DROPBOX_APP_SECRET: ${DROPBOX_APP_SECRET}
+      DROPBOX_REFRESH_TOKEN: ${DROPBOX_REFRESH_TOKEN}
+      DBSYNC_CONFIG: /app/config.yaml
+    volumes:
+      # Configuration is read-only inside the container.
+      - ./config/config.yaml:/app/config.yaml:ro
+      # Persistent synchronization state (SQLite); survives restarts.
+      - ./state:/app/state
+      # Example bind mounts matching config/config.example.yaml. Replace
+      # /host/... with real paths on your machine, or add/remove mounts to
+      # match your own file mappings.
+      - /host/books:/data/books
+      - /host/artwork:/data/artwork
+      - /host/references:/data/references
+    # No ports are published: dbsync only makes outbound HTTPS requests to
+    # Dropbox. The one-time `auth login` flow needs an inbound loopback
+    # callback and is intended to be run on the host via
+    # `go run ./cmd/dbsync auth login` (see README.md), not inside this
+    # container.

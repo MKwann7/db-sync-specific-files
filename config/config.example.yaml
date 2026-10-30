@@ -1,0 +1,55 @@
+# Example dbsync configuration.
+#
+# Copy this file to config/config.yaml (or set DBSYNC_CONFIG to point
+# elsewhere) and adjust the file mappings, local paths, and Dropbox paths
+# for your own use. See README.md for a full walkthrough.
+
+sync:
+  # How often to re-check local and remote state when running continuously
+  # (`dbsync run`). Accepts any Go duration string, e.g. "30s", "5m", "1h".
+  interval: 60s
+
+  # When true, no local files, remote files, or synchronization baselines
+  # are ever modified -- only the actions that *would* be taken are logged.
+  dry_run: false
+
+  # Defaults applied to every mapping below unless explicitly overridden.
+  defaults:
+    direction: bidirectional   # upload | download | bidirectional
+    conflict_policy: keep_both # keep_both | prefer_local | prefer_remote | skip
+    delete_policy: ignore      # only 'ignore' is currently supported
+
+  files:
+    - name: Manuscript
+      local: /data/books/manuscript.docx
+      remote: /Books/manuscript.docx
+      direction: bidirectional
+
+    - name: Cover Artwork
+      local: /data/artwork/cover.png
+      remote: /Books/Artwork/cover.png
+      direction: upload
+
+    - name: Reference PDF
+      local: /data/references/notes.pdf
+      remote: /References/notes.pdf
+      direction: download
+
+# Restricts which local directories file mappings are permitted to use.
+# Every mapping's "local" path (after resolving symlinks) must fall within
+# one of these roots, preventing configuration mistakes or path traversal
+# from touching files outside the directories you intentionally mounted
+# into the container.
+security:
+  allowed_roots:
+    - /data/books
+    - /data/artwork
+    - /data/references
+
+# Where dbsync keeps its SQLite synchronization-state database. This must
+# point at a persistent volume so state survives container restarts.
+state_path: /app/state/dbsync.db
+
+logging:
+  level: info   # debug | info | warn | error
+  format: json  # json | text

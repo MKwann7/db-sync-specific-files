@@ -1,0 +1,25 @@
+# Version control and editor metadata
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Local environment / secrets - never baked into the image
+.env
+.env.*
+!.env.example
+
+# Local state and config overrides that should be bind-mounted, not copied
+state/
+config/config.yaml
+
+# Build artifacts
+dbsync
+*.exe
+*.test
+*.out
+
+# Documentation and CI (not needed at runtime)
+README.md
+*.md
+.github/

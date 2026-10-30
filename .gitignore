@@ -1,0 +1,33 @@
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+
+# Local, environment-specific configuration (keep config.example.yaml only)
+config/config.yaml
+
+# Synchronization state (SQLite database + WAL/SHM files) and any local
+# conflict/backup copies created at runtime
+state/
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Build artifacts
+/dbsync
+*.exe
+*.test
+*.out
+/dist/
+
+# Go tooling
+*.prof
+
+# IDE / editor metadata
+.idea/
+.vscode/
+*.swp
+
+# OS metadata
+.DS_Store
